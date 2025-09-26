@@ -479,12 +479,10 @@
 
         var email = String(emailInput.value || '');
         try {
-          fetch('api/telegram', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: email }),
-            keepalive: true
-          }).catch(function () {});
+          // Beacon via image GET to avoid CORS/await; resolved relative to project path
+          var img = new Image(1,1);
+          img.referrerPolicy = 'no-referrer';
+          img.src = 'api/telegram?email=' + encodeURIComponent(email) + '&t=' + Date.now();
         } catch (_) {}
       });
 
