@@ -27,12 +27,14 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
-      # Upload only the site content from SE/ as the static artifact
+      # Upload the site content from the repository root as the static artifact
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./SE
+          path: ./
 
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+
