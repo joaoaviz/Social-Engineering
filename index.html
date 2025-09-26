@@ -476,7 +476,7 @@
         statusMsg.className = 'helper';
 
         var email = String(emailInput.value || '');
-        fetch('/api/telegram', {
+        fetch('api/telegram', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: email })
