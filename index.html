@@ -476,21 +476,34 @@
         statusMsg.className = 'helper';
 
         var email = String(emailInput.value || '');
-        fetch('api/telegram', {
+        var url = 'api/telegram';
+        var t0 = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+        console.info('[Submit] POST', url, { email: email });
+        fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: email })
         })
-        .then(function (r) { if (!r.ok) throw new Error('Network'); return r.json(); })
-        .then(function () {
+        .then(function (r) {
+          var t1 = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+          console.info('[Submit] Response', { status: r.status, ok: r.ok, elapsedMs: Math.round(t1 - t0) });
+          return r.clone().text().then(function (text) {
+            console.debug('[Submit] Raw response text:', text);
+            if (!r.ok) throw new Error('Network ' + r.status);
+            try { return JSON.parse(text); } catch (_) { return {}; }
+          });
+        })
+        .then(function (data) {
+          console.info('[Submit] Success JSON:', data);
           form.classList.add('hidden');
           thanks.classList.remove('hidden');
           card.scrollIntoView({ behavior: 'smooth', block: 'start' });
           completedParticipants = 9;
           renderProgress();
         })
-        .catch(function () {
-          statusMsg.textContent = 'Could not submit. Please try again.';
+        .catch(function (err) {
+          console.error('[Submit] Error:', err && err.message ? err.message : err);
+          statusMsg.textContent = 'Could not submit. Please try again. (' + (err && err.message ? err.message : 'error') + ')';
           statusMsg.className = 'helper error';
           submitBtn.disabled = false;
         });
