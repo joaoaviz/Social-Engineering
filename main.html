@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Social Engineering Challenge</title>
+  <style>
+    :root {
+      --bg: #f8fafc;               /* light background */
+      --card: #ffffff;             /* white card */
+      --text: #111827;             /* slate-900 */
+      --muted: #6b7280;            /* slate-500 */
+      --primary: #0ea5e9;          /* sky-500 */
+      --primary-700: #0284c7;      /* sky-600 */
+      --accent: #16a34a;           /* green-600 */
+      --warning: #b45309;          /* amber-700 */
+      --danger: #dc2626;           /* red-600 */
+      --ring: rgba(14, 165, 233, 0.25);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      background: radial-gradient(1200px 600px at 10% 10%, #ffffff 0%, var(--bg) 60%);
+      color: var(--text);
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 880px;
+    }
+
+    .brandbar {
+      width: 100%;
+      max-width: 980px;
+      margin: 0 auto 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 8px 12px;
+      background: linear-gradient(180deg, rgba(0,0,0,0.03), rgba(0,0,0,0.01));
+      border: 1px solid rgba(0,0,0,0.06);
+      border-radius: 12px;
+    }
+
+    .brand-logos {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-logos img {
+      display: block;
+      height: 28px;
+      width: auto;
+      filter: drop-shadow(0 2px 8px rgba(0,0,0,0.15));
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid rgba(0,0,0,0.06);
+      backdrop-filter: saturate(140%) blur(0);
+      border-radius: 16px;
+      padding: 28px 28px 24px;
+      box-shadow: 0 10px 30px rgba(2, 6, 23, 0.06);
+    }
+
+    .card-sticky {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: -8px -8px 12px;
+      padding: 8px;
+      background: var(--card);
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+
+    @media (max-width: 640px) {
+      .card-sticky { top: 0; }
+      .cta { flex-wrap: wrap; }
+    }
+
+    .title {
+      margin: 0 0 6px 0;
+      font-size: 28px;
+      letter-spacing: 0.2px;
+    }
+
+    .subtitle {
+      margin: 0 0 18px 0;
+      color: var(--muted);
+      font-size: 16px;
+    }
+
+    .cta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 14px 0 22px 0;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(14, 165, 233, 0.10);
+      color: var(--primary);
+      border: 1px solid rgba(14, 165, 233, 0.28);
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-size: 14px;
+      transition: box-shadow 160ms ease, transform 160ms ease;
+    }
+
+    #completedCount, #spotsLeft {
+      font-weight: 800;
+      font-size: 18px;
+    }
+
+    @keyframes pulseGlow {
+      0% { transform: scale(1); box-shadow: 0 0 0 rgba(14,165,233,0); }
+      30% { transform: scale(1.06); box-shadow: 0 0 0 8px rgba(14,165,233,0.18); }
+      60% { transform: scale(1.02); box-shadow: 0 0 0 12px rgba(14,165,233,0.10); }
+      100% { transform: scale(1); box-shadow: 0 0 0 rgba(14,165,233,0); }
+    }
+
+    .pill.glow {
+      animation: pulseGlow 640ms ease-out;
+    }
+
+    .warning {
+      color: var(--warning);
+    }
+
+    form {
+      display: grid;
+      gap: 18px;
+      margin-top: 8px;
+      transition: opacity 220ms ease;
+    }
+
+    label {
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .field {
+      display: grid;
+      gap: 8px;
+    }
+
+    input[type="email"],
+    .question {
+      width: 100%;
+      background: #ffffff;
+      border: 1px solid rgba(2, 6, 23, 0.12);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 14px 14px;
+      outline: none;
+      transition: border-color 120ms ease, box-shadow 120ms ease;
+    }
+
+    input[type="email"]:focus,
+    .question:focus-within {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 6px var(--ring);
+    }
+
+    input[type="email"].invalid {
+      border-color: var(--danger);
+      box-shadow: 0 0 0 6px rgba(220, 38, 38, 0.2);
+    }
+
+    .helper {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .error { color: var(--danger); }
+    .success { color: var(--accent); }
+
+    .options {
+      display: grid;
+      gap: 10px;
+      margin-top: 6px;
+    }
+
+    .option {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      background: #ffffff;
+      border: 1px solid rgba(2, 6, 23, 0.12);
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-top: 6px;
+    }
+
+    button {
+      appearance: none;
+      border: none;
+      background: var(--primary);
+      color: #ffffff;
+      font-weight: 700;
+      border-radius: 12px;
+      padding: 12px 16px;
+      cursor: pointer;
+      transition: transform 120ms ease, background 120ms ease, box-shadow 120ms ease;
+      box-shadow: 0 8px 20px rgba(2, 6, 23, 0.12);
+    }
+
+    button:hover { background: var(--primary-700); }
+    button:disabled { opacity: 0.6; cursor: not-allowed; box-shadow: none; }
+
+    .footer-note {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .hidden { display: none; }
+    .fade-out { opacity: 0; }
+
+    .thanks {
+      text-align: center;
+      padding: 20px 12px 4px;
+    }
+
+    .steps {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .step {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <section class="card" id="card">
+      <div class="card-sticky">
+        <div class="brand-logos">
+          <img src="https://upload.wikimedia.org/wikipedia/fr/3/34/Chanel_logo_complet.png?20181129222122" alt="Chanel" title="Chanel">
+        </div>
+        <div class="cta">
+          <span class="pill" id="completedPill"><span id="completedCount">7</span>  already completed</span>
+          <span class="pill" id="spotsPill">Only <strong><span id="spotsLeft">3</span> <span id="spotsWord">spots</span></strong> left</span>
+        </div>
+        <div class="brand-logos">
+          <img src="https://images.prismic.io/exalt/ZlTQKaWtHYXtT1CW_HEADER_Logo.png?auto=format%2Ccompress&fit=max&w=256" alt="Exalt" title="Exalt">
+        </div>
+      </div>
+      <h1 class="title">Social Engineering – Challenge</h1>
+      <p class="subtitle">Be among the first 10 to answer correctly and win a prize!</p>
+
+
+      <form id="challengeForm" novalidate>
+        <div class="field hidden" id="emailField">
+          <label for="email">Work email (must contain <strong>@chanel.com</strong>)</label>
+          <input type="email" id="email" name="email" placeholder="firstname.lastname@chanel.com" autocomplete="email" required>
+          <div id="emailHelp" class="helper">We will only use this to confirm eligibility.</div>
+        </div>
+
+        <div id="questions">
+        <div class="field question" id="q1">
+          <label>1) What is social engineering?</label>
+          <div class="options">
+            <label class="option"><input type="radio" name="q1" value="a" required> Manipulating people to divulge confidential information</label>
+            <label class="option"><input type="radio" name="q1" value="b"> Upgrading network hardware to improve performance</label>
+            <label class="option"><input type="radio" name="q1" value="c"> Encrypting files to protect data at rest</label>
+          </div>
+        </div>
+
+        <div class="field question" id="q2">
+          <label>2) What is phishing?</label>
+          <div class="options">
+            <label class="option"><input type="radio" name="q2" value="a" required> A fraudulent attempt to obtain sensitive info via deceptive messages</label>
+            <label class="option"><input type="radio" name="q2" value="b"> A secure company portal for password resets</label>
+            <label class="option"><input type="radio" name="q2" value="c"> A tool used to remove viruses from devices</label>
+          </div>
+        </div>
+
+        <div class="field question" id="q3">
+          <label>3) How can your social media be used by attackers?</label>
+          <div class="options">
+            <label class="option"><input type="radio" name="q3" value="a" required> Gathering personal details to craft targeted scams (spear‑phishing)</label>
+            <label class="option"><input type="radio" name="q3" value="b"> Speeding up your internet connection automatically</label>
+            <label class="option"><input type="radio" name="q3" value="c"> Increasing your device storage capacity</label>
+          </div>
+        </div>
+        </div>
+
+        <div class="actions">
+          <button type="submit" id="submitBtn" disabled>Submit answers</button>
+          <span id="statusMsg" class="helper"></span>
+        </div>
+
+        <p class="footer-note">This activity is for security awareness only. No personal data is stored.</p>
+      </form>
+
+      <div id="thanks" class="thanks hidden">
+        <h2>Thanks for participating!</h2>
+        <p class="subtitle">Theres is nothing suspicious going on here</p>
+        <div class="steps">
+          
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      const emailInput = document.getElementById('email');
+      const statusMsg = document.getElementById('statusMsg');
+      const submitBtn = document.getElementById('submitBtn');
+      const form = document.getElementById('challengeForm');
+      const thanks = document.getElementById('thanks');
+      const card = document.getElementById('card');
+      const emailHelp = document.getElementById('emailHelp');
+      const emailField = document.getElementById('emailField');
+      const questionsContainer = document.getElementById('questions');
+      const completedCountEl = document.getElementById('completedCount');
+      const spotsLeftEl = document.getElementById('spotsLeft');
+      const completedPill = document.getElementById('completedPill');
+      const spotsPill = document.getElementById('spotsPill');
+      const spotsWordEl = document.getElementById('spotsWord');
+
+      const TOTAL_SPOTS = 10;
+      let completedParticipants = 7; // initial state
+      let lastRenderedCompleted = completedParticipants;
+      let emailRequested = false;
+
+      function triggerGlow() {
+        if (completedPill) {
+          completedPill.classList.remove('glow');
+          // force reflow to restart animation
+          void completedPill.offsetWidth;
+          completedPill.classList.add('glow');
+        }
+        if (spotsPill) {
+          spotsPill.classList.remove('glow');
+          void spotsPill.offsetWidth;
+          spotsPill.classList.add('glow');
+        }
+      }
+
+      function renderProgress() {
+        if (!completedCountEl || !spotsLeftEl) return;
+        const changed = completedParticipants !== lastRenderedCompleted;
+        completedCountEl.textContent = String(completedParticipants);
+        const remaining = Math.max(0, TOTAL_SPOTS - completedParticipants);
+        spotsLeftEl.textContent = String(remaining);
+        if (spotsWordEl) {
+          spotsWordEl.textContent = remaining === 1 ? 'spot' : 'spots';
+        }
+        if (changed) {
+          triggerGlow();
+          lastRenderedCompleted = completedParticipants;
+        }
+      }
+
+      function validateEmailContainsChanel(email) {
+        if (!email) return false;
+        return email.toLowerCase().includes('@chanel.com');
+      }
+
+      function allQuestionsAnswered() {
+        const q1 = form.querySelector('input[name="q1"]:checked');
+        const q2 = form.querySelector('input[name="q2"]:checked');
+        const q3 = form.querySelector('input[name="q3"]:checked');
+        return Boolean(q1 && q2 && q3);
+      }
+
+      function updateSubmitState() {
+        const emailOk = validateEmailContainsChanel(emailInput.value);
+        const questionsOk = allQuestionsAnswered();
+        // Enable button: if email not requested yet, only require questions.
+        // Once email requested/shown, require both email and questions.
+        submitBtn.disabled = emailRequested ? !(emailOk && questionsOk) : !questionsOk;
+
+        if (!emailRequested) {
+          statusMsg.textContent = questionsOk ? 'Click submit to confirm your work email.' : 'Answer all questions to continue';
+          statusMsg.className = questionsOk ? 'helper success' : 'helper warning';
+          return;
+        }
+
+        // Email has been requested; show email-specific guidance
+        if (!emailInput.value) {
+          statusMsg.textContent = '';
+          emailHelp.textContent = 'Please enter your work email.';
+          emailHelp.className = 'helper warning';
+          emailInput.classList.remove('invalid');
+          emailInput.removeAttribute('aria-invalid');
+        } else if (!emailOk) {
+          statusMsg.textContent = '';
+          emailHelp.textContent = 'Please use your work email.';
+          emailHelp.className = 'helper error';
+          emailInput.classList.add('invalid');
+          emailInput.setAttribute('aria-invalid', 'true');
+        } else if (!questionsOk) {
+          statusMsg.textContent = 'Answer all questions to continue';
+          statusMsg.className = 'helper warning';
+          emailHelp.textContent = 'Work email looks good.';
+          emailHelp.className = 'helper success';
+          emailInput.classList.remove('invalid');
+          emailInput.removeAttribute('aria-invalid');
+        } else {
+          statusMsg.textContent = 'Ready to submit';
+          statusMsg.className = 'helper success';
+          emailHelp.textContent = 'Work email looks good.';
+          emailHelp.className = 'helper success';
+          emailInput.classList.remove('invalid');
+          emailInput.removeAttribute('aria-invalid');
+        }
+      }
+
+      emailInput.addEventListener('input', updateSubmitState);
+      form.addEventListener('change', updateSubmitState);
+
+      form.addEventListener('submit', function (e) {
+        const emailOk = validateEmailContainsChanel(emailInput.value);
+        const questionsOk = allQuestionsAnswered();
+
+        // If email step not started yet, reveal email field on first submit click
+        if (!emailRequested) {
+          e.preventDefault();
+          emailRequested = true;
+          emailField.classList.remove('hidden');
+          if (questionsContainer) questionsContainer.classList.add('hidden');
+          submitBtn.textContent = 'Confirm email & submit';
+          updateSubmitState();
+          emailInput.focus();
+          return;
+        }
+
+        // Email requested but invalid or questions incomplete
+        if (!(emailOk && questionsOk)) {
+          e.preventDefault();
+          updateSubmitState();
+          if (!emailOk) emailInput.focus();
+          return;
+        }
+
+        // Proceed with final submission
+        e.preventDefault();
+        form.classList.add('hidden');
+        thanks.classList.remove('hidden');
+        card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+        completedParticipants = 9;
+        renderProgress();
+      });
+
+      // On first time a question is answered, bump to 8 after a short delay
+      let bumpedOnFirstAnswer = false;
+      let firstAnswerTimer = null;
+      form.addEventListener('change', function (e) {
+        if (bumpedOnFirstAnswer) return;
+        if (!(e.target && e.target.matches('input[type="radio"][name^="q"]'))) return;
+        bumpedOnFirstAnswer = true;
+        if (completedParticipants === 7 && firstAnswerTimer === null) {
+          firstAnswerTimer = window.setTimeout(function () {
+            completedParticipants = 8;
+            renderProgress();
+            firstAnswerTimer = null;
+          }, 1000);
+        }
+      }, { passive: true });
+
+      renderProgress();
+      updateSubmitState();
+    })();
+  </script>
+</body>
+</html>
+
+
