@@ -1,27 +1,35 @@
+const json = (obj, init = {}) => new Response(JSON.stringify(obj), { headers: { 'Content-Type': 'application/json', ...(init.headers || {}), 'Access-Control-Allow-Origin': '*' }, status: init.status || 200 });
+
+export const onRequestOptions = async () => {
+  return new Response(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type'
+    }
+  });
+};
+
+export const onRequestGet = async () => {
+  return json({ ok: true, message: 'Use POST with JSON { email } to submit.' });
+};
+
 export const onRequestPost = async ({ request, env }) => {
   try {
     if (!env || !env.TELEGRAM_TOKEN || !env.TELEGRAM_CHAT_ID) {
-      return new Response(JSON.stringify({ error: 'Missing TELEGRAM_TOKEN or TELEGRAM_CHAT_ID' }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return json({ error: 'Missing TELEGRAM_TOKEN or TELEGRAM_CHAT_ID' }, { status: 500 });
     }
 
     const contentType = request.headers.get('content-type') || '';
     if (!contentType.includes('application/json')) {
-      return new Response(JSON.stringify({ error: 'Expected application/json' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return json({ error: 'Expected application/json' }, { status: 400 });
     }
 
     const payload = await request.json().catch(() => ({}));
     const email = (payload && typeof payload.email === 'string') ? payload.email.trim() : '';
     if (!email) {
-      return new Response(JSON.stringify({ error: 'Missing email' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return json({ error: 'Missing email' }, { status: 400 });
     }
 
     const url = `https://api.telegram.org/bot${env.TELEGRAM_TOKEN}/sendMessage`;
@@ -34,15 +42,9 @@ export const onRequestPost = async ({ request, env }) => {
     });
 
     const data = await resp.json();
-    return new Response(JSON.stringify(data), {
-      status: resp.status,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    return json(data, { status: resp.status });
   } catch (err) {
-    return new Response(JSON.stringify({ error: 'Unexpected error' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    return json({ error: 'Unexpected error' }, { status: 500 });
   }
 };
 
